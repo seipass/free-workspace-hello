@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: smoke (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Show environment
+        run: |
+          echo "runner os: ${{ runner.os }}"
+          git --version
+      - name: Verify repo contents
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in README.md LICENSE .gitignore; do
+            test -s "$f" || { echo "missing or empty: $f"; exit 1; }
+          done
+          echo "required files present"
